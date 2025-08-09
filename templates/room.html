@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="flex h-full w-full gap-6 p-6">
+
+    <!-- Document Editor (Fullscreen Canvas) -->
+    <div class="flex-1 bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+
+        <!-- Top Toolbar Floating -->
+        <div class="flex justify-between items-center p-4 bg-white/10 backdrop-blur-md rounded-t-3xl shadow-md">
+            <h2 class="text-2xl font-bold">Editing Room: {{ room_name }}</h2>
+            <div class="flex gap-3">
+                <button class="toolbar-btn">B</button>
+                <button class="toolbar-btn italic">I</button>
+                <button class="toolbar-btn underline">U</button>
+                <button class="toolbar-btn">{"{ }"}</button>
+            </div>
+        </div>
+
+        <!-- Editor Canvas -->
+        <div id="editor" contenteditable="true"
+             class="flex-1 m-6 p-6 bg-white/20 rounded-2xl overflow-auto focus:outline-none text-white text-lg leading-relaxed shadow-inner">
+            {{ saved_content|safe }}
+            <div id="cursorContainer" class="absolute top-0 left-0 w-full h-full pointer-events-none"></div>
+
+        </div>
+
+        <!-- Floating Version Button -->
+        <button onclick="fetchVersions()"
+                class="fixed bottom-8 right-8 bg-gradient-to-r from-purple-500 to-violet-600 px-6 py-3 rounded-full shadow-xl hover:scale-110 transition">
+            🕒 Versions
+        </button>
+
+    </div>
+
+    <!-- Collaboration Panel (Floating Sidebar) -->
+    <div class="w-96 bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+        
+        <!-- Active Users Avatars -->
+        <div class="p-4 flex gap-2 overflow-x-auto border-b border-white/20">
+            <div class="w-10 h-10 bg-green-400 rounded-full border-2 border-white hover:scale-110 transition"></div>
+            <div class="w-10 h-10 bg-blue-400 rounded-full border-2 border-white hover:scale-110 transition"></div>
+            <div class="w-10 h-10 bg-pink-400 rounded-full border-2 border-white hover:scale-110 transition"></div>
+        </div>
+
+        <!-- Live Chat -->
+        <div class="flex-1 overflow-auto p-4 space-y-2" id="chatBox">
+            <!-- Chat Messages -->
+        </div>
+
+        <!-- Chat Input -->
+        <div class="p-4 flex gap-2 bg-white/10 backdrop-blur-md">
+            <input id="chatInput" type="text" placeholder="Type a message..."
+                   class="flex-1 px-3 py-2 rounded-lg text-black placeholder-gray-600 focus:outline-none">
+            <button onclick="sendMessage()"
+                    class="bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 rounded-lg text-white font-bold">Send</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- Version History Modal -->
+<div id="versionModal" class="fixed inset-0 bg-black/60 hidden justify-center items-center">
+    <div class="bg-white text-black p-6 rounded-xl w-11/12 md:w-1/3 max-h-[80vh] overflow-auto">
+        <h3 class="text-2xl font-bold mb-4">Version History</h3>
+        <div id="versionList" class="space-y-3">
+            <!-- Versions Load Dynamically -->
+        </div>
+        <button onclick="closeModal()"
+                class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:scale-105">
+            Close
+        </button>
+    </div>
+</div>
+
+<script>
+    function sendMessage() {
+        const msg = document.getElementById('chatInput').value.trim();
+        if (msg) {
+            console.log('Sending:', msg);
+            document.getElementById('chatInput').value = '';
+        }
+    }
+
+    function fetchVersions() {
+        fetch(`/versions/{{ room_name }}`)
+            .then(response => response.json())
+            .then(data => {
+                const versionList = document.getElementById('versionList');
+                versionList.innerHTML = '';
+                data.versions.forEach(version => {
+                    const btn = document.createElement('button');
+                    btn.innerText = `Restore @ ${version.saved_at}`;
+                    btn.classList.add('block', 'w-full', 'text-left', 'hover:bg-indigo-100', 'p-2', 'rounded');
+                    btn.onclick = () => {
+                        document.getElementById('editor').innerHTML = version.content;
+                        socket.emit('text_update', { room: '{{ room_name }}', content: version.content });
+                        closeModal();
+                    };
+                    versionList.appendChild(btn);
+                });
+                document.getElementById('versionModal').classList.remove('hidden');
+            });
+    }
+
+    function closeModal() {
+        document.getElementById('versionModal').classList.add('hidden');
+    }
+</script>
+
+{% endblock %}

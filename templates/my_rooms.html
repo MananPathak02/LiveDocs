@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="p-6 text-white">
+    <h1 class="text-3xl font-bold mb-6"> My Rooms</h1>
+    <div id="rooms-container" class="grid gap-4"></div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const userEmail = localStorage.getItem("userEmail"); // assuming you're storing email
+
+        fetch("/my-rooms", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: userEmail })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById("rooms-container");
+
+            if (!data.success || data.rooms.length === 0) {
+                container.innerHTML = `<p class="text-gray-300">No rooms found.</p>`;
+                return;
+            }
+
+            data.rooms.forEach(room => {
+                const card = document.createElement("div");
+                card.className = "bg-white/10 backdrop-blur-lg p-4 rounded-xl shadow hover:scale-105 transition-all";
+
+                card.innerHTML = `
+                    <h2 class="text-xl font-semibold text-purple-300">${room.room_name}</h2>
+                    <p class="text-sm text-white/80">Room ID: ${room.room_id}</p>
+                    <p class="text-sm text-white/70">Created: ${room.created_at}</p>
+                `;
+
+                container.appendChild(card);
+            });
+        });
+    });
+</script>
+{% endblock %}

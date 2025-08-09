@@ -1,0 +1,80 @@
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.toolbar-btn {
+    @apply px-3 py-1 bg-white/20 rounded-lg text-lg font-semibold hover:bg-white/30 hover:scale-105 transition;
+}
+
+#editor {
+    scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 9999px;
+}
+
+#userAvatars img {
+    width: 30px;
+    height: 30px;
+    border-radius: 9999px;
+    border: 2px solid white;
+    animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+button:hover {
+    box-shadow: 0 0 15px rgba(116, 0, 184, 0.6);
+    transform: scale(1.05);
+    transition: all 0.2s ease-in-out;
+}
+
+input:focus, button:focus {
+    outline: none;
+}
+#cursorContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.cursor-indicator {
+    position: absolute;
+    height: 1.5rem;
+    width: 2px;
+    background: yellow;
+    animation: blink 1s step-start infinite;
+}
+
+.cursor-name {
+    position: absolute;
+    top: -1.5rem;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-20px); }
+  10%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+.animate-fadeInOut {
+  animation: fadeInOut 3s ease forwards;
+}
